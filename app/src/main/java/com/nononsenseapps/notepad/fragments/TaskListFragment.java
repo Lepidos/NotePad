@@ -729,6 +729,26 @@ public class TaskListFragment extends Fragment implements OnSharedPreferenceChan
 				if (mMode != null) mMode.finish();
 			}
 		}
+
+		final MenuItem sortItem = menu.findItem(R.id.menu_sort_toggle);
+		if (sortItem != null) {
+			// Hide sort menu if this is a simple note
+			if (mListType != null && mListType.equals(getString(R.string.const_listtype_notes))) {
+				sortItem.setVisible(false);
+			}
+			else {
+				sortItem.setVisible(true);
+				// Set icon state
+				if (mSortType != null && mSortType.equals(getString(R.string.const_duedate))) {
+					// Active
+					sortItem.getIcon().setAlpha(255);
+				}
+				else {
+					// Inactive
+					sortItem.getIcon().setAlpha(130);
+				}
+			}
+		}
 	}
 
 	@Override
@@ -741,24 +761,13 @@ public class TaskListFragment extends Fragment implements OnSharedPreferenceChan
 				mListener.addTaskInList("", ListHelper.getARealList(getActivity(), -1));
 			}
 			return true;
-		} else if (itemId == R.id.menu_clearcompleted) {
-			if (mListId != -1) {
-				DialogDeleteCompletedTasks
-						.showDialog(getParentFragmentManager(), mListId, null);
+		} else if (itemId == R.id.menu_sort_toggle) {
+			// Toggle between due date and manual
+			if (mSortType != null && mSortType.equals(getString(R.string.const_duedate))) {
+				PreferencesHelper.setSortingManual(getActivity());
+			} else {
+				PreferencesHelper.setSortingDue(getActivity());
 			}
-			return true;
-		} else if (itemId == R.id.menu_sort_title) {
-			// TODO reorder the notes like we do in DialogEditList
-			Toast.makeText(this.getContext(), R.string.feature_is_WIP, Toast.LENGTH_SHORT).show();
-			// SharedPreferencesHelper.setSortingAlphabetic(this);
-			return true;
-		} else if (itemId == R.id.menu_sort_due) {
-			Toast.makeText(this.getContext(), R.string.feature_is_WIP, Toast.LENGTH_SHORT).show();
-			// SharedPreferencesHelper.setSortingDue(this);
-			return true;
-		} else if (itemId == R.id.menu_sort_manual) {
-			Toast.makeText(this.getContext(), R.string.feature_is_WIP, Toast.LENGTH_SHORT).show();
-			// SharedPreferencesHelper.setSortingManual(this);
 			return true;
 		} else {
 			return false;

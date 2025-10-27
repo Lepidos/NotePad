@@ -125,17 +125,10 @@ public class SDSynchronizer extends Synchronizer implements SynchronizerInterfac
 		OrgParser orgParser = new RegexParser();
 		// Replace slashes with underscores
 		String desiredName = orgdesiredName.replace("/", "_");
-		String filename;
-		for (int i = 0; i < 100; i++) {
-			if (i == 0) {
-				filename = desiredName + ".org";
-			} else {
-				filename = desiredName + i + ".org";
-			}
-			File f = new File(ORG_DIR, filename);
-			if (!f.exists()) {
-				return new OrgFile(orgParser, filename);
-			}
+		String filename = desiredName + ".org";
+		File f = new File(ORG_DIR, filename);
+		if (!f.exists()) {
+			return new OrgFile(orgParser, filename);
 		}
 		throw new IllegalArgumentException("Filename not accessible");
 	}

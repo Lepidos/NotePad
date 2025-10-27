@@ -121,11 +121,11 @@ public abstract class Synchronizer extends DBSyncBase implements SynchronizerInt
 						// UPDATE EXISTING LIST, IF CHANGED
 						boolean shouldSaveFile = false;
 
-						if (wasRenamed(list, file)) {
-							final String oldName = file.getFilename();
-							renameFile(list, dbEntry, file);
-							renameRemoteFile(oldName, file);
-						}
+					//	if (wasRenamed(list, file)) {
+					//		final String oldName = file.getFilename();
+					//		renameFile(list, dbEntry, file);
+					//		renameRemoteFile(oldName, file);
+					//	}
 
 						// Merge information in database and file
 						final int shouldSave = merge(list, dbEntry, file);

@@ -87,6 +87,14 @@ import org.androidannotations.annotations.ViewById;
 import java.util.ArrayList;
 import java.util.concurrent.Executors;
 
+import android.Manifest;
+import android.os.Build;
+import android.os.Environment;
+import android.provider.Settings;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import android.content.pm.PackageManager;
+
 /**
  * This is extended by {@link ActivityMain_}. It was renamed to ActivityList
  * in release 6.0.0 beta, it has to do with getting rid of the annotations
@@ -434,8 +442,25 @@ public class ActivityMain extends AppCompatActivity
 			this.requestPermissions(PermissionsHelper.FOR_NOTIFICATIONS,
 					PermissionsHelper.REQCODE_NOTIFICATIONS);
 
+		checkStoragePermission();
+
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		prefs.registerOnSharedPreferenceChangeListener(this);
+	}
+
+	private void checkStoragePermission() {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+			if (!Environment.isExternalStorageManager()) {
+				Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+				intent.addCategory("android.intent.category.DEFAULT");
+				intent.setData(Uri.parse(String.format("package:%s", getApplicationContext().getPackageName())));
+				startActivityForResult(intent, 2296);
+			}
+		} else {
+			if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+				ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 100);
+			}
+		}
 	}
 
 	@Override

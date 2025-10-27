@@ -29,23 +29,11 @@
 			app:showAsAction="ifRoom"/>
 
 		<item
+			android:id="@+id/menu_sort_toggle"
 			android:icon="@drawable/ic_sort_24dp"
 			android:orderInCategory="400"
 			app:showAsAction="ifRoom"
-			android:title="@string/sorting">
-			<menu>
-				<item
-					android:id="@+id/menu_sort_title"
-					android:title="@string/sort_list_alphabetical"/>
-				<item
-					android:id="@+id/menu_sort_due"
-					android:title="@string/sort_list_due"/>
-				<item
-					android:id="@+id/menu_sort_manual"
-					android:title="@string/sort_list_manual"/>
-			</menu>
-		</item>
-
+			android:title="@string/sorting"/>
 	</group>
 
 </menu>

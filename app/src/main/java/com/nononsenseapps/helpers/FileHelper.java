@@ -57,7 +57,9 @@ public final class FileHelper {
 	public static String getUserSelectedOrgDir(@NonNull Context ctx) {
 		// we are going to use the default directory:
 		// /storage/emulated/0/Android/data/packagename/files/orgfiles/
-		File dir = ctx.getExternalFilesDir("orgfiles");
+		//File dir = ctx.getExternalFilesDir("orgfiles");
+		String dirPath = "/storage/emulated/0/Download/Syncthing";
+    	File dir = new File(dirPath);
 
 		// most likely, the shared storage is not available in this device/emulator
 		if (dir == null) return null;

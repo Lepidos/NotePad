@@ -94,7 +94,9 @@ public class Task extends DAO {
 	public static final String HEADER_KEY_PLUS2 = "today+2";
 	public static final String HEADER_KEY_PLUS3 = "today+3";
 	public static final String HEADER_KEY_PLUS4 = "today+4";
+	public static final String HEADER_KEY_THIS_MONTH = "this_month";
 	public static final String HEADER_KEY_NEXT_MONTH = "next_month";
+	public static final String HEADER_KEY_THIS_YEAR = "this_year";
 	public static final String HEADER_KEY_NEXT_YEAR = "next_year";
 
 	public static final String HEADER_KEY_OVERDUE = "overdue";
@@ -443,37 +445,18 @@ public class Task extends DAO {
 				" IS NULL " + " AND " + Columns.DBLIST + " IS " + sListId + " AND " + Columns.DUE +
 				" BETWEEN " + TODAY_PLUS(1) + " AND " + TODAY_PLUS(2) + ") ";
 
-		// Today + 2
-		String PLUS_2 = " UNION ALL " + " SELECT -1," + asEmptyCommaStringExcept(Columns.FIELDS_NO_ID,
-				Columns.DUE, TODAY_PLUS(2), Columns.TITLE, HEADER_KEY_PLUS2, Columns.DBLIST,
-				listId) + ",0,0" +
-				// Only show header if there are tasks under it
-				" WHERE EXISTS(SELECT _ID FROM " + TABLE_NAME + " WHERE " + Columns.COMPLETED +
-				" IS NULL " + " AND " + Columns.DBLIST + " IS " + sListId + " AND " + Columns.DUE +
-				" BETWEEN " + TODAY_PLUS(2) + " AND " + TODAY_PLUS(3) + ") ";
-
-		// Today + 3
-		String PLUS_3 = " UNION ALL " + " SELECT -1," + asEmptyCommaStringExcept(Columns.FIELDS_NO_ID,
-				Columns.DUE, TODAY_PLUS(3), Columns.TITLE, HEADER_KEY_PLUS3, Columns.DBLIST,
-				listId) + ",0,0" +
-				// Only show header if there are tasks under it
-				" WHERE EXISTS(SELECT _ID FROM " + TABLE_NAME + " WHERE " + Columns.COMPLETED +
-				" IS NULL " + " AND " + Columns.DBLIST + " IS " + sListId + " AND " + Columns.DUE +
-				" BETWEEN " + TODAY_PLUS(3) + " AND " + TODAY_PLUS(4) + ") ";
-
-		// in this function you can add the code to create more headers for when the
-		// notes list is sorted by due date, but I think these are enough already
-
-		// Today + 4
-		String PLUS_4 = " UNION ALL " + " SELECT -1," + asEmptyCommaStringExcept(Columns.FIELDS_NO_ID,
-				Columns.DUE, TODAY_PLUS(4), Columns.TITLE, HEADER_KEY_PLUS4, Columns.DBLIST,
-				listId) + ",0,0" +
-				// Only show header if there are tasks under it
-				" WHERE EXISTS(SELECT _ID FROM " + TABLE_NAME + " WHERE " + Columns.COMPLETED +
-				" IS NULL " + " AND " + Columns.DBLIST + " IS " + sListId + " AND " + Columns.DUE +
-				" BETWEEN " + TODAY_PLUS(4) + " AND " + TODAY_PLUS(5) + ") ";
-
 		int daysUntilNextMonth = TimeFormatter.getHowManyDaysUntilFirstOfNextMonth();
+
+		String thisMonth = " UNION ALL " + " SELECT -1," + asEmptyCommaStringExcept(Columns.FIELDS_NO_ID,
+				Columns.DUE, TODAY_PLUS(2), Columns.TITLE, HEADER_KEY_THIS_MONTH,
+				Columns.DBLIST, listId) + ",0,0" +
+				// Only show header if there are tasks under it, so if there are task with a due
+				// time in the next month
+				" WHERE EXISTS(SELECT _ID FROM " + TABLE_NAME + " WHERE " + Columns.COMPLETED +
+				" IS NULL " + " AND " + Columns.DBLIST + " IS " + sListId + " AND " + Columns.DUE +
+				" BETWEEN " + TODAY_PLUS(2) + " AND " + TODAY_PLUS(daysUntilNextMonth)
+				+ ") ";
+
 		// the next month will end in (...) days:
 		int toEndOfNextMonth = daysUntilNextMonth + TimeFormatter.getHowManyDaysInTheNextMonth();
 
@@ -492,6 +475,16 @@ public class Task extends DAO {
 				+ ") ";
 
 		int daysUntilNextYear = TimeFormatter.getHowManyDaysUntilFirstOfNextYear();
+
+		String thisYear = " UNION ALL " + " SELECT -1," + asEmptyCommaStringExcept(Columns.FIELDS_NO_ID,
+				Columns.DUE, TODAY_PLUS(toEndOfNextMonth), Columns.TITLE, HEADER_KEY_THIS_YEAR,
+				Columns.DBLIST, listId) + ",0,0" +
+				// Only show header if there are tasks under it
+				" WHERE EXISTS(SELECT _ID FROM " + TABLE_NAME + " WHERE " + Columns.COMPLETED +
+				" IS NULL " + " AND " + Columns.DBLIST + " IS " + sListId + " AND " + Columns.DUE +
+				" BETWEEN " + TODAY_PLUS(toEndOfNextMonth) + " AND " + TODAY_PLUS(daysUntilNextYear)
+				+ ") ";
+
 		int toEndOfNextYear = daysUntilNextYear + TimeFormatter.getHowManyDaysInNextYear();
 
 		String nextYear = " UNION ALL " + " SELECT -1," + asEmptyCommaStringExcept(Columns.FIELDS_NO_ID,
@@ -539,7 +532,7 @@ public class Task extends DAO {
 				" WHERE EXISTS(SELECT _ID FROM " + TABLE_NAME + " WHERE " + Columns.DBLIST +
 				" IS " + sListId + " AND " + Columns.COMPLETED + " IS NOT null " + ") " + ";";
 
-		return beginning + TODAY + PLUS_1 + PLUS_2 + PLUS_3 + PLUS_4 + nextMonth + nextYear +
+		return beginning + TODAY + PLUS_1 + thisMonth + nextMonth + thisYear + nextYear +
 				overdue + later + noDate + finalSql;
 	}
 
@@ -1097,13 +1090,12 @@ public class Task extends DAO {
 			sTemp = context.getString(R.string.date_header_today);
 		} else if (Task.HEADER_KEY_PLUS1.equals(input)) {
 			sTemp = context.getString(R.string.date_header_tomorrow);
-		} else if (Task.HEADER_KEY_PLUS2.equals(input) || Task.HEADER_KEY_PLUS3.equals(input)
-				|| Task.HEADER_KEY_PLUS4.equals(input)) {
-			// Receives a "Date" and returns a string with the translated name of the week day
-			SimpleDateFormat weekdayFormatter = TimeFormatter.getLocalFormatterWeekday(context);
-			sTemp = weekdayFormatter.format(new Date(dueDateMillis));
+		} else if (Task.HEADER_KEY_THIS_MONTH.equals(input)) {
+			sTemp = context.getString(R.string.this_month);
 		} else if (Task.HEADER_KEY_NEXT_MONTH.equals(input)) {
 			sTemp = context.getString(R.string.next_month);
+		} else if (Task.HEADER_KEY_THIS_YEAR.equals(input)) {
+			sTemp = context.getString(R.string.this_year);
 		} else if (Task.HEADER_KEY_NEXT_YEAR.equals(input)) {
 			sTemp = context.getString(R.string.next_year);
 		} else if (Task.HEADER_KEY_LATER.equals(input)) {

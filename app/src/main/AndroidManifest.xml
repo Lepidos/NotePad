@@ -24,7 +24,9 @@
 
 	<!-- TODO these permissions are useless as of now: we don't have a synchronization
 	      method that uses these. -->
-
+	<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+	<uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
 	<!-- for ContentResolver.getIsSyncable -->
 	<uses-permission android:name="android.permission.READ_SYNC_SETTINGS"/>
 	<!-- for ContentResolver.isSyncActive -->
